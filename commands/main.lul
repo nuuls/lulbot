@@ -1,12 +1,4 @@
-lul:lul$ {
-    text: Kappa
-}
-xd:Keepo {
-    if: $(user) == nuuls
-    text: TriEasy
-}
-
-test:xd \d lul {
+!test {
     script: (py -3 -u) scripts/xd.py
 }
 
@@ -14,14 +6,10 @@ kappa {
     script: (node) scripts/xd.js
 }
 
-4head {
-    text: 4Head
+addCommand:^!addcmd {
+    script: (py -3 -u) scripts/add_command.py
 }
 
-123 {
-    script: (echo) Kappa
-}
-
-vislaud:VisLaud {
-    text: VisLaud
+LUL:LUL {
+    text: LUL
 }

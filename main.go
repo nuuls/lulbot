@@ -1,9 +1,14 @@
 package main
 
 import (
+	"github.com/howeyc/fsnotify"
 	"github.com/nuuls/log"
 	"github.com/nuuls/lulbot/command"
 	"github.com/nuuls/lulbot/irc"
+)
+
+const (
+	commandsPath = "./commands"
 )
 
 var (
@@ -19,7 +24,7 @@ func init() {
 }
 
 func main() {
-	cmds = command.ParseDir("./commands")
+	cmds = command.ParseDir(commandsPath)
 	log.Debug(cmds)
 	chat = irc.Init(&irc.Config{
 		Pass:      cfg.Pass,
@@ -28,6 +33,7 @@ func main() {
 		Server:    cfg.Server,
 		Channels:  cfg.Channels,
 	})
+	go watchCommands()
 	for {
 		msg := chat.ReadLine()
 		log.Info(msg.Channel + "# " + msg.User + ": " + msg.Text)
@@ -38,7 +44,6 @@ func main() {
 func handleMessage(msg *irc.Message) {
 	for _, cmd := range cmds {
 		if cmd.Regex.MatchString(msg.Text) {
-			log.Debug(cmd)
 			if cmd.Script != nil {
 				out := cmd.Script.Exec(msg.Channel, msg.User, msg.Text)
 				go func(o <-chan string) {
@@ -49,6 +54,30 @@ func handleMessage(msg *irc.Message) {
 			} else {
 				chat.Say(msg.Channel, cmd.Reply)
 			}
+		}
+	}
+}
+
+func watchCommands() {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = watcher.Watch(commandsPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for {
+		select {
+		case ev := <-watcher.Event:
+			log.Debug(ev)
+			commands := command.ParseDir(commandsPath)
+			if commands != nil {
+				cmds = commands
+				log.Info("reloaded all commands")
+			}
+		case err := <-watcher.Error:
+			log.Error(err)
 		}
 	}
 }
