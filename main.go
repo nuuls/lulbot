@@ -38,7 +38,17 @@ func main() {
 func handleMessage(msg *irc.Message) {
 	for _, cmd := range cmds {
 		if cmd.Regex.MatchString(msg.Text) {
-			chat.Say(msg.Channel, cmd.Reply)
+			log.Debug(cmd)
+			if cmd.Script != nil {
+				out := cmd.Script.Exec(msg.Channel, msg.User, msg.Text)
+				go func(o <-chan string) {
+					for line := range o {
+						chat.Say(msg.Channel, line)
+					}
+				}(out)
+			} else {
+				chat.Say(msg.Channel, cmd.Reply)
+			}
 		}
 	}
 }
