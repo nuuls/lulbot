@@ -1,3 +1,5 @@
 *.exe
 *.exe~
 config.json
+commands/*
+!commands/main.lul

@@ -4,7 +4,7 @@ user = sys.argv[2]
 if user != "nuuls":
     logging.error(user+ " cannot add commands")
     sys.exit(1)
-file = open("./commands/main.lul", "a")
+file = open("./commands/added.lul", "a")
 text = " ".join(sys.argv[3:])
 
 spl = text.split(" ", 2)

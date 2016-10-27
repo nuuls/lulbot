@@ -1,6 +1,9 @@
 package main
 
 import (
+	"flag"
+	"os"
+
 	"github.com/howeyc/fsnotify"
 	"github.com/nuuls/log"
 	"github.com/nuuls/lulbot/command"
@@ -11,6 +14,8 @@ const (
 	commandsPath = "./commands"
 )
 
+var noColor = flag.Bool("nocolor", false, "disable log colors")
+
 var (
 	cfg  *Config
 	chat *irc.Irc
@@ -18,8 +23,15 @@ var (
 )
 
 func init() {
-	log.AddLogger(log.DefaultLogger)
+	flag.Parse()
 	log.CallerStrLen = 23
+	log.AddLogger(&log.Logger{
+		Level:  log.LevelDebug,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+		Color:  !*noColor,
+	})
+
 	cfg = LoadConfig("config.json")
 }
 
